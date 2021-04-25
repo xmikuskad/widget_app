@@ -24,11 +24,20 @@ class MyAppWidget : AppWidgetProvider() {
 
         if (intent.action == REFRESH_ACTION) {
             val views = RemoteViews(context.packageName, R.layout.my_app_widget)
-            views.setTextViewText(R.id.appwidget_text, "YES TODAY!")
 
+            val savedDay = getSavedDay(context)
             val actualDay = Calendar.getInstance(TimeZone.getTimeZone("GMT+1:00")).get(Calendar.DAY_OF_YEAR)
-            saveDay(context,actualDay)
-            views.setInt(R.id.myRandomId, "setBackgroundColor", Color.GREEN)
+
+            if(savedDay != actualDay) {
+                saveDay(context, actualDay)
+                views.setInt(R.id.myRandomId, "setBackgroundColor", Color.GREEN)
+                views.setTextViewText(R.id.appwidget_text, "YES TODAY!")
+            }
+            else {
+                saveDay(context, actualDay-1)
+                views.setInt(R.id.myRandomId, "setBackgroundColor", Color.RED)
+                views.setTextViewText(R.id.appwidget_text, "NO TODAY!")
+            }
 
             AppWidgetManager.getInstance(context).updateAppWidget(
                 ComponentName(context, MyAppWidget::class.java), views
@@ -80,16 +89,16 @@ internal fun updateAppWidget(
 
     println("$savedDay SAVED DAY")
     if(savedDay == -1 || savedDay == 1) {
-        saveDay(context,appWidgetId)
+        saveDay(context,actualDay)
         return
     }
 
     if(savedDay < actualDay) {
-        views.setTextViewText(R.id.appwidget_text, "NO TODAY $savedDay")
+        views.setTextViewText(R.id.appwidget_text, "NO TODAY")
         views.setInt(R.id.myRandomId, "setBackgroundColor", Color.RED)
     }
     else {
-        views.setTextViewText(R.id.appwidget_text, "YES TODAY $savedDay")
+        views.setTextViewText(R.id.appwidget_text, "YES TODAY")
         views.setInt(R.id.myRandomId, "setBackgroundColor", Color.GREEN)
     }
 
